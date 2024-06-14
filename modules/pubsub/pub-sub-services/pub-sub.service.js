@@ -54,11 +54,17 @@ let PubSubService = class PubSubService extends events_1.EventEmitter {
         const csvString = sesionBuffer.toString('utf-8');
         const jsonData = await (0, csv_converter_1.CsvConverter)(csvString);
         const sesion = jsonData[0];
+        const archivoName = sesion.nombre_archivos || sesion.nombre.replace(/ /g, '_');
         const nuevaSesion = new sesione_entity_1.Sesion();
         nuevaSesion.clavePrincipal = crypto.randomUUID();
         nuevaSesion.id_comision = sesion.id_comision;
         nuevaSesion.nombre = sesion.nombre;
         nuevaSesion.fecha = sesion.fecha;
+        nuevaSesion.rutaAudio = `${archivoName}.wav`;
+        nuevaSesion.rutaVideo = `${archivoName}.mp4`;
+        nuevaSesion.rutaDoc = `${archivoName}.docx`;
+        nuevaSesion.rutaPDF = `${archivoName}.pdf`;
+        nuevaSesion.rutaXML = `${archivoName}.xml`;
         await this.sesionRepository.save(nuevaSesion);
         const transcripcionFile = files.find((file) => file.includes('transcripcion.csv'));
         if (!transcripcionFile) {
