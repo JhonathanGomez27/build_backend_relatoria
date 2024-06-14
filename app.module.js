@@ -20,6 +20,8 @@ const comisiones_module_1 = require("./modules/comisiones/comisiones.module");
 const sesiones_module_1 = require("./modules/sesiones/sesiones.module");
 const transcripciones_module_1 = require("./modules/transcripciones/transcripciones.module");
 const logs_module_1 = require("./modules/logs/logs.module");
+const pubsub_module_1 = require("./modules/pubsub/pubsub.module");
+const schedule_module_1 = require("./modules/schedule/schedule.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -37,7 +39,9 @@ exports.AppModule = AppModule = __decorate([
             comisiones_module_1.ComisionesModule,
             sesiones_module_1.SesionesModule,
             transcripciones_module_1.TranscripcionesModule,
-            logs_module_1.LogsModule
+            logs_module_1.LogsModule,
+            schedule_module_1.ScheduleAppModule,
+            pubsub_module_1.PubsubModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
