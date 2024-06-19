@@ -12,6 +12,7 @@ const pub_sub_service_1 = require("./pub-sub-services/pub-sub.service");
 const typeorm_1 = require("@nestjs/typeorm");
 const sesione_entity_1 = require("../sesiones/entities/sesione.entity");
 const transcripcione_entity_1 = require("../transcripciones/entities/transcripcione.entity");
+const axios_module_1 = require("../axios/axios.module");
 let PubsubModule = class PubsubModule {
 };
 exports.PubsubModule = PubsubModule;
@@ -19,6 +20,7 @@ exports.PubsubModule = PubsubModule = __decorate([
     (0, common_1.Module)({
         imports: [
             typeorm_1.TypeOrmModule.forFeature([sesione_entity_1.Sesion, transcripcione_entity_1.Transcripcion]),
+            axios_module_1.AxiosModule
         ],
         providers: [pub_sub_service_1.PubSubService],
         exports: [pub_sub_service_1.PubSubService],

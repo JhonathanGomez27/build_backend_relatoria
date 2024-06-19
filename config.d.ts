@@ -16,6 +16,7 @@ declare const _default: (() => {
         jwtRefreshTokenExpiresTime: string;
         jwtForgotPasswordSecret: string;
         jwtForgotPasswordExpiresTime: string;
+        api_url: string;
     };
 }) & import("@nestjs/config").ConfigFactoryKeyHost<{
     database: {
@@ -35,6 +36,7 @@ declare const _default: (() => {
         jwtRefreshTokenExpiresTime: string;
         jwtForgotPasswordSecret: string;
         jwtForgotPasswordExpiresTime: string;
+        api_url: string;
     };
 }>;
 export default _default;

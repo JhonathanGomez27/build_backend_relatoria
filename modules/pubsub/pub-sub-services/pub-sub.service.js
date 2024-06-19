@@ -21,9 +21,11 @@ const transcripcione_entity_1 = require("../../transcripciones/entities/transcri
 const typeorm_2 = require("typeorm");
 const csv_converter_1 = require("../../../utils/csv.converter");
 const crypto = require("crypto");
+const axios_service_1 = require("../../axios/axios.service");
 let PubSubService = class PubSubService extends events_1.EventEmitter {
-    constructor(sesionRepository, transcripcionRepository) {
+    constructor(axiosService, sesionRepository, transcripcionRepository) {
         super({ captureRejections: true });
+        this.axiosService = axiosService;
         this.sesionRepository = sesionRepository;
         this.transcripcionRepository = transcripcionRepository;
     }
@@ -112,17 +114,75 @@ let PubSubService = class PubSubService extends events_1.EventEmitter {
         });
         return { message: 'Archivos procesados correctamente' };
     }
+    async cronGetSesiones() {
+        const { ok, data } = await this.axiosService.getSesiones();
+        if (ok) {
+            const sesiones = data;
+            sesiones.forEach(async (sesion) => {
+                if (sesion.estado.nombreEstado === 'Revisado') {
+                    const archivoName = sesion.nombreSesion;
+                    sesion.fecha = await this.fechaFormatter(sesion.fechaSesion);
+                    const nuevaSesion = new sesione_entity_1.Sesion();
+                    nuevaSesion.clavePrincipal = crypto.randomUUID();
+                    nuevaSesion.id_comision = '1';
+                    nuevaSesion.nombre = sesion.nombreSesion.replaceAll('_', ' ');
+                    nuevaSesion.fecha = sesion.fecha;
+                    nuevaSesion.duracion = sesion.duracion;
+                    nuevaSesion.rutaAudio = `${archivoName}.mp3`;
+                    nuevaSesion.rutaVideo = `${archivoName}.mp4`;
+                    nuevaSesion.rutaDoc = `${archivoName}.docx`;
+                    nuevaSesion.rutaPDF = `${archivoName}.pdf`;
+                    nuevaSesion.rutaXML = `${archivoName}.xml`;
+                    await this.sesionRepository.save(nuevaSesion);
+                    const responseTranscription = await this.axiosService.getTranscripciones(sesion.idSesion);
+                    if (!responseTranscription.ok) {
+                        console.log("Error al crear la sesion");
+                        return;
+                    }
+                    await this.sesionRepository.save(nuevaSesion);
+                    const entidadesTranscripciones = await Promise.all(responseTranscription.data.map(async (transcripcion) => {
+                        const nuevaTranscripcion = new transcripcione_entity_1.Transcripcion();
+                        nuevaTranscripcion.clavePrincipal = crypto.randomUUID();
+                        nuevaTranscripcion.id_sesion = nuevaSesion.clavePrincipal;
+                        nuevaTranscripcion.texto = await this.escaparCaracteres(transcripcion.textoCorregido);
+                        nuevaTranscripcion.textoOriginal = transcripcion.textoCorregido;
+                        nuevaTranscripcion.minuto = transcripcion.minutoTranscripcion;
+                        return nuevaTranscripcion;
+                    }));
+                    for (let index = 0; index < entidadesTranscripciones.length; index++) {
+                        const element = entidadesTranscripciones[index];
+                        if (!element.clavePrincipal || element.clavePrincipal == '') {
+                            continue;
+                        }
+                        await this.transcripcionRepository.save(element);
+                    }
+                    const { ok, data } = await this.axiosService.sincronizarSesiones(sesion.idSesion);
+                    if (!ok) {
+                        console.log("Error al sincronizar la sesion");
+                        return;
+                    }
+                    console.log("sesion creada correctamente: ", nuevaSesion.nombre);
+                }
+            });
+        }
+    }
     async escaparCaracteres(texto) {
         const caracteresProblematicos = /[\\'":!()*/?]/g;
         return texto.replace(caracteresProblematicos, '\\$&');
+    }
+    async fechaFormatter(fechaSesion) {
+        const date = new Date(fechaSesion);
+        const formattedDate = date.toISOString().split('T')[0];
+        return formattedDate;
     }
 };
 exports.PubSubService = PubSubService;
 exports.PubSubService = PubSubService = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, typeorm_1.InjectRepository)(sesione_entity_1.Sesion)),
-    __param(1, (0, typeorm_1.InjectRepository)(transcripcione_entity_1.Transcripcion)),
-    __metadata("design:paramtypes", [typeorm_2.Repository,
+    __param(1, (0, typeorm_1.InjectRepository)(sesione_entity_1.Sesion)),
+    __param(2, (0, typeorm_1.InjectRepository)(transcripcione_entity_1.Transcripcion)),
+    __metadata("design:paramtypes", [axios_service_1.AxiosService,
+        typeorm_2.Repository,
         typeorm_2.Repository])
 ], PubSubService);
 //# sourceMappingURL=pub-sub.service.js.map
