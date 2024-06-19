@@ -22,10 +22,12 @@ const typeorm_2 = require("typeorm");
 const csv_converter_1 = require("../../../utils/csv.converter");
 const crypto = require("crypto");
 const axios_service_1 = require("../../axios/axios.service");
+const generate_files_service_1 = require("../../generate-files/generate-files.service");
 let PubSubService = class PubSubService extends events_1.EventEmitter {
-    constructor(axiosService, sesionRepository, transcripcionRepository) {
+    constructor(axiosService, generateFilesService, sesionRepository, transcripcionRepository) {
         super({ captureRejections: true });
         this.axiosService = axiosService;
+        this.generateFilesService = generateFilesService;
         this.sesionRepository = sesionRepository;
         this.transcripcionRepository = transcripcionRepository;
     }
@@ -175,13 +177,17 @@ let PubSubService = class PubSubService extends events_1.EventEmitter {
         const formattedDate = date.toISOString().split('T')[0];
         return formattedDate;
     }
+    async generateFiles() {
+        this.generateFilesService.generateFiles();
+    }
 };
 exports.PubSubService = PubSubService;
 exports.PubSubService = PubSubService = __decorate([
     (0, common_1.Injectable)(),
-    __param(1, (0, typeorm_1.InjectRepository)(sesione_entity_1.Sesion)),
-    __param(2, (0, typeorm_1.InjectRepository)(transcripcione_entity_1.Transcripcion)),
+    __param(2, (0, typeorm_1.InjectRepository)(sesione_entity_1.Sesion)),
+    __param(3, (0, typeorm_1.InjectRepository)(transcripcione_entity_1.Transcripcion)),
     __metadata("design:paramtypes", [axios_service_1.AxiosService,
+        generate_files_service_1.GenerateFilesService,
         typeorm_2.Repository,
         typeorm_2.Repository])
 ], PubSubService);

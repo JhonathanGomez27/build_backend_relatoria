@@ -23,6 +23,7 @@ const logs_module_1 = require("./modules/logs/logs.module");
 const pubsub_module_1 = require("./modules/pubsub/pubsub.module");
 const schedule_module_1 = require("./modules/schedule/schedule.module");
 const axios_module_1 = require("./modules/axios/axios.module");
+const generate_files_module_1 = require("./modules/generate-files/generate-files.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -43,7 +44,8 @@ exports.AppModule = AppModule = __decorate([
             logs_module_1.LogsModule,
             schedule_module_1.ScheduleAppModule,
             pubsub_module_1.PubsubModule,
-            axios_module_1.AxiosModule
+            axios_module_1.AxiosModule,
+            generate_files_module_1.GenerateFilesModule
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
