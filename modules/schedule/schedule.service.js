@@ -18,13 +18,17 @@ let ScheduleService = class ScheduleService {
         this.pubSubService = pubSubService;
     }
     async handleCron() {
-        console.log('Cron is working');
+        console.log(`<============= CRON RELATORIAS WORKING ${this.getHoraActual()} ================>`);
         await this.pubSubService.cronGetSesiones();
+    }
+    getHoraActual() {
+        const fecha = new Date();
+        return `${fecha.getHours()}:${fecha.getMinutes()}:${fecha.getSeconds()}`;
     }
 };
 exports.ScheduleService = ScheduleService;
 __decorate([
-    (0, schedule_1.Cron)(schedule_1.CronExpression.EVERY_10_MINUTES),
+    (0, schedule_1.Cron)(schedule_1.CronExpression.EVERY_MINUTE),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)

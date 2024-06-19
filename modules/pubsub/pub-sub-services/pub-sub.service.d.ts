@@ -20,5 +20,5 @@ export declare class PubSubService extends EventEmitter {
     cronGetSesiones(): Promise<void>;
     escaparCaracteres(texto: any): Promise<any>;
     fechaFormatter(fechaSesion: string): Promise<string>;
-    generateFiles(): Promise<void>;
+    getHoraActual(): string;
 }

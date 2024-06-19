@@ -3,4 +3,5 @@ export declare class ScheduleService {
     private readonly pubSubService;
     constructor(pubSubService: PubSubService);
     handleCron(): Promise<void>;
+    getHoraActual(): string;
 }

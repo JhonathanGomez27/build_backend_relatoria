@@ -122,12 +122,13 @@ let PubSubService = class PubSubService extends events_1.EventEmitter {
             const sesiones = data;
             sesiones.forEach(async (sesion) => {
                 if (sesion.estado.nombreEstado === 'Revisado') {
+                    const nombre_sesion = sesion.nombreSesion.replaceAll('_', ' ');
                     const archivoName = sesion.nombreSesion;
                     sesion.fecha = await this.fechaFormatter(sesion.fechaSesion);
                     const nuevaSesion = new sesione_entity_1.Sesion();
                     nuevaSesion.clavePrincipal = crypto.randomUUID();
                     nuevaSesion.id_comision = '1';
-                    nuevaSesion.nombre = sesion.nombreSesion.replaceAll('_', ' ');
+                    nuevaSesion.nombre = nombre_sesion;
                     nuevaSesion.fecha = sesion.fecha;
                     nuevaSesion.duracion = sesion.duracion;
                     nuevaSesion.rutaAudio = `${archivoName}.mp3`;
@@ -135,19 +136,24 @@ let PubSubService = class PubSubService extends events_1.EventEmitter {
                     nuevaSesion.rutaDoc = `${archivoName}.docx`;
                     nuevaSesion.rutaPDF = `${archivoName}.pdf`;
                     nuevaSesion.rutaXML = `${archivoName}.xml`;
-                    await this.sesionRepository.save(nuevaSesion);
                     const responseTranscription = await this.axiosService.getTranscripciones(sesion.idSesion);
                     if (!responseTranscription.ok) {
                         console.log("Error al crear la sesion");
                         return;
                     }
-                    await this.sesionRepository.save(nuevaSesion);
+                    const duplicado = await this.sesionRepository.query(`SELECT * FROM sesiones WHERE nombre = '${nombre_sesion}'`);
+                    if (duplicado.length === 0) {
+                        await this.sesionRepository.save(nuevaSesion);
+                    }
+                    else {
+                        nuevaSesion.clavePrincipal = duplicado[0].clavePrincipal;
+                    }
                     const entidadesTranscripciones = await Promise.all(responseTranscription.data.map(async (transcripcion) => {
                         const nuevaTranscripcion = new transcripcione_entity_1.Transcripcion();
                         nuevaTranscripcion.clavePrincipal = crypto.randomUUID();
                         nuevaTranscripcion.id_sesion = nuevaSesion.clavePrincipal;
-                        nuevaTranscripcion.texto = await this.escaparCaracteres(transcripcion.textoCorregido);
-                        nuevaTranscripcion.textoOriginal = transcripcion.textoCorregido;
+                        nuevaTranscripcion.texto = await this.escaparCaracteres(transcripcion.textoCorregido || transcripcion.textoTranscripcion);
+                        nuevaTranscripcion.textoOriginal = transcripcion.textoCorregido || transcripcion.textoTranscripcion;
                         nuevaTranscripcion.minuto = transcripcion.minutoTranscripcion;
                         return nuevaTranscripcion;
                     }));
@@ -163,7 +169,7 @@ let PubSubService = class PubSubService extends events_1.EventEmitter {
                         console.log("Error al sincronizar la sesion");
                         return;
                     }
-                    console.log("sesion creada correctamente: ", nuevaSesion.nombre);
+                    console.log(`sesion sincronizada correctamente: ${this.getHoraActual()}`, nuevaSesion.nombre);
                 }
             });
         }
@@ -177,8 +183,9 @@ let PubSubService = class PubSubService extends events_1.EventEmitter {
         const formattedDate = date.toISOString().split('T')[0];
         return formattedDate;
     }
-    async generateFiles() {
-        this.generateFilesService.generateFiles();
+    getHoraActual() {
+        const fecha = new Date();
+        return `${fecha.getHours()}:${fecha.getMinutes()}:${fecha.getSeconds()}`;
     }
 };
 exports.PubSubService = PubSubService;
