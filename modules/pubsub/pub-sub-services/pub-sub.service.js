@@ -119,7 +119,11 @@ let PubSubService = class PubSubService extends events_1.EventEmitter {
     async cronGetSesiones() {
         const { ok, data } = await this.axiosService.getSesiones();
         if (ok) {
-            const sesiones = data;
+            const sesiones = data.data;
+            if (sesiones.length === 0) {
+                console.log('No hay sesiones para sincronizar');
+                return;
+            }
             sesiones.forEach(async (sesion) => {
                 if (sesion.estado.nombreEstado === 'Revisado') {
                     const nombre_sesion = sesion.nombreSesion.replaceAll('_', ' ');

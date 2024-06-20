@@ -30,7 +30,7 @@ let AxiosService = class AxiosService {
     }
     async getSesiones() {
         try {
-            const response = await this.axiosinstance.get('sesiones/listaSesiones');
+            const response = await this.axiosinstance.get('sesiones/listaSesionesRevisadas');
             if (response.status === 200) {
                 return { ok: true, data: response.data };
             }
